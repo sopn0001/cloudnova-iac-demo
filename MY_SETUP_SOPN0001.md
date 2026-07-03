@@ -56,14 +56,6 @@ az ad app federated-credential create --id "$OBJECT_ID" --parameters '{
   "audiences": ["api://AzureADTokenExchange"]
 }'
 
-# Federated credential — deploy job uses environment: dev
-az ad app federated-credential create --id "$OBJECT_ID" --parameters '{
-  "name": "github-environment-dev",
-  "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:sopn0001/cloudnova-iac-demo:environment:dev",
-  "audiences": ["api://AzureADTokenExchange"]
-}'
-
 # Grant Contributor at subscription scope (required for Terraform to create the resource group)
 az role assignment create \
   --assignee "$APP_ID" \
@@ -96,19 +88,7 @@ Copy the **entire line** starting with `ssh-rsa ...`
 
 ---
 
-## Step 4 — Create GitHub environment (required for deploy)
-
-Go to: https://github.com/sopn0001/cloudnova-iac-demo/settings/environments
-
-1. Click **New environment**
-2. Name: `dev`
-3. Click **Configure environment**
-4. (Optional) Add yourself as required reviewer for demo control
-5. Save
-
----
-
-## Step 5 — Test the PR review flow (live demo)
+## Step 4 — Test the PR review flow (live demo)
 
 ```bash
 cd "/Users/idrissop/Documents/Algonquin College/Cloud Development and Operations/Applied Projects/AI Project and Presentation"
@@ -120,7 +100,7 @@ git checkout -b demo/flawed-infrastructure
 # Trigger PR workflow
 echo "" >> infra/terraform/flawed/main.tf
 git add infra/terraform/flawed/main.tf
-git commit -m "feat: CloudNova dev environment PR for review"
+git commit -m "feat: CloudNova infrastructure PR for review"
 git push -u origin demo/flawed-infrastructure
 ```
 
@@ -131,18 +111,18 @@ On GitHub:
 
 ---
 
-## Step 6 — Merge and deploy to Azure
+## Step 5 — Merge and deploy to Azure
 
 After showing the BLOCKED review in your presentation:
 
 1. Open `infra/terraform/fixed/main.tf` side-by-side — explain fixes
 2. **Merge** the PR (or merge a clean PR to `main`)
 3. Watch **Actions** → `Deploy to Azure (fixed Terraform)` job
-4. Verify in Azure Portal → `rg-cloudnova-dev`
+4. Verify in Azure Portal → `rg-cloudnova`
 
 ---
 
-## Step 7 — Optional: PR with READY status
+## Step 6 — Optional: PR with READY status
 
 For a green ✅ review comment:
 
@@ -164,7 +144,7 @@ Open PR → comment shows **✅ READY** → merge to deploy.
 |---------|----------|
 | `git push` asks for password | Use GitHub personal access token as password, or sign in via GitHub Desktop |
 | Azure login fails | Run `az login` |
-| Deploy job: OIDC error | Re-run Step 2 federated credentials — both `main` and `environment:dev` are required |
+| Deploy job: OIDC error | Re-run Step 2 federated credential for `main` |
 | Deploy job: SSH key error | Ensure `SSH_PUBLIC_KEY` secret is the full `ssh-rsa AAAA...` line |
 | No PR comment | Check repo Settings → Actions → General → Workflow permissions = **Read and write** |
 | `ai-review` red X on flawed PR | **Expected** — critical issues block merge by design |
@@ -175,11 +155,10 @@ Open PR → comment shows **✅ READY** → merge to deploy.
 
 ```
 [x] Step 1: git push to GitHub
-[x] Step 2: Azure OIDC + resource group commands
+[x] Step 2: Azure OIDC commands
 [x] Step 3: Four GitHub secrets added
-[x] Step 4: GitHub environment "dev" created
-[ ] Step 5: Open demo PR — see BLOCKED comment
-[ ] Step 6: Merge to main — Azure deploy succeeds
+[ ] Step 4: Open demo PR — see BLOCKED comment
+[ ] Step 5: Merge to main — Azure deploy succeeds
 ```
 
 ---

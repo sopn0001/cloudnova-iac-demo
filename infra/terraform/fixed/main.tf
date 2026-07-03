@@ -6,6 +6,19 @@ resource "azurerm_resource_group" "main" {
   tags     = local.tags
 }
 
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault" "main" {
+  name                       = var.key_vault_name
+  location                   = azurerm_resource_group.main.location
+  resource_group_name        = azurerm_resource_group.main.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  enable_rbac_authorization  = true
+  soft_delete_retention_days = 7
+  tags                       = local.tags
+}
+
 resource "azurerm_storage_account" "main" {
   name                     = local.storage_account_name
   resource_group_name      = azurerm_resource_group.main.name
@@ -94,7 +107,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   name                = local.vm_name
   resource_group_name = azurerm_resource_group.main.name
   location            = var.location
-  size                = var.environment == "prod" ? "Standard_D4s_v3" : "Standard_B2s"
+  size                = "Standard_B2s"
   admin_username      = "cloudnova_admin"
   tags                = local.tags
 
@@ -129,7 +142,7 @@ resource "azurerm_service_plan" "main" {
   location            = var.location
   os_type             = "Linux"
   tags                = local.tags
-  sku_name            = var.environment == "prod" ? "P1v3" : "B1"
+  sku_name            = "B1"
 }
 
 resource "azurerm_linux_web_app" "main" {
@@ -145,7 +158,7 @@ resource "azurerm_linux_web_app" "main" {
   }
 
   site_config {
-    always_on           = var.environment == "prod"
+    always_on           = false
     ftps_state          = "Disabled"
     minimum_tls_version = "1.2"
 
@@ -155,7 +168,13 @@ resource "azurerm_linux_web_app" "main" {
   }
 
   app_settings = {
-    KEYVAULT_URI             = var.key_vault_id
+    KEYVAULT_URI             = azurerm_key_vault.main.vault_uri
     SQL_PASSWORD_SECRET_NAME = var.sql_admin_password_secret_name
   }
+}
+
+resource "azurerm_role_assignment" "web_app_kv_secrets_user" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_linux_web_app.main.identity[0].principal_id
 }

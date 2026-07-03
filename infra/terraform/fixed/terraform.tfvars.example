@@ -1,6 +1,7 @@
-location             = "canadacentral"
-environment          = "dev"
-app_name             = "saasapi"
-resource_group_name  = "rg-cloudnova-dev"  # Created by Terraform, not pre-provisioned
-key_vault_id         = "/subscriptions/<subscription-id>/resourceGroups/rg-cloudnova-dev/providers/Microsoft.KeyVault/vaults/kv-cloudnova-dev"
-ssh_public_key       = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... your-public-key"
+# Optional overrides — defaults are set in variables.tf
+# app_name            = "saasapi"
+# resource_group_name = "rg-cloudnova"
+# key_vault_name      = "kv-cloudnova"
+# location            = "canadacentral"
+
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... your-public-key"

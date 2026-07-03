@@ -4,20 +4,10 @@ variable "location" {
   default     = "canadacentral"
 }
 
-variable "environment" {
-  description = "Environment name (dev, test, prod)"
-  type        = string
-  default     = "dev"
-
-  validation {
-    condition     = contains(["dev", "test", "prod"], var.environment)
-    error_message = "environment must be dev, test, or prod."
-  }
-}
-
 variable "app_name" {
   description = "Application workload name"
   type        = string
+  default     = "saasapi"
 
   validation {
     condition     = length(var.app_name) >= 3 && length(var.app_name) <= 20
@@ -28,11 +18,13 @@ variable "app_name" {
 variable "resource_group_name" {
   description = "Name of the resource group Terraform will create"
   type        = string
+  default     = "rg-cloudnova"
 }
 
-variable "key_vault_id" {
-  description = "Key Vault resource ID for application secrets"
+variable "key_vault_name" {
+  description = "Name of the Key Vault Terraform will create"
   type        = string
+  default     = "kv-cloudnova"
 }
 
 variable "sql_admin_password_secret_name" {
@@ -53,7 +45,7 @@ variable "tags" {
 }
 
 locals {
-  naming_prefix         = "cn-${var.app_name}-${var.environment}"
+  naming_prefix         = "cn-${var.app_name}"
   storage_account_name  = lower(replace("${local.naming_prefix}st${substr(md5(azurerm_resource_group.main.id), 0, 6)}", "-", ""))
   vnet_name             = "${local.naming_prefix}-vnet"
   nsg_name              = "${local.naming_prefix}-nsg"
@@ -63,7 +55,7 @@ locals {
   web_app_name          = "${local.naming_prefix}-web"
 
   default_tags = {
-    Environment = var.environment
+    Environment = "cloudnova"
     Application = var.app_name
     Company     = "CloudNova"
     ManagedBy   = "Terraform"

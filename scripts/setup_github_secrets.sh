@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configure GitHub Actions secrets, workflow permissions, and dev environment.
+# Configure GitHub Actions secrets and workflow permissions.
 # Prerequisites: gh auth login (run once: gh auth login -h github.com -p https -w)
 
 set -euo pipefail
@@ -34,10 +34,6 @@ gh api -X PUT "repos/${REPO}/actions/permissions/workflow" \
   -f default_workflow_permissions=write \
   -F can_approve_pull_request_reviews=true
 
-echo "Creating dev environment..."
-gh api -X PUT "repos/${REPO}/environments/dev" --silent 2>/dev/null || true
-
 echo ""
 echo "Done. Verify at:"
 echo "  https://github.com/${REPO}/settings/secrets/actions"
-echo "  https://github.com/${REPO}/settings/environments"

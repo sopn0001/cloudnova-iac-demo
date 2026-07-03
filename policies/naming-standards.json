@@ -3,19 +3,18 @@
   "title": "CloudNova Azure Naming Standards",
   "description": "Governance rules for CloudNova Terraform — used by AI-assisted review and CI/CD",
   "namingConvention": {
-    "pattern": "cn-{appName}-{environment}-{resourceType}",
+    "pattern": "cn-{appName}-{resourceType}",
     "examples": {
-      "storageAccount": "cnsaasapidevstabc123",
-      "virtualNetwork": "cn-saasapi-dev-vnet",
-      "networkSecurityGroup": "cn-saasapi-dev-nsg",
-      "virtualMachine": "cn-saasapi-dev-vm",
-      "appServicePlan": "cn-saasapi-dev-asp",
-      "webApp": "cn-saasapi-dev-web"
+      "storageAccount": "cnsaasapistabc123",
+      "virtualNetwork": "cn-saasapi-vnet",
+      "networkSecurityGroup": "cn-saasapi-nsg",
+      "virtualMachine": "cn-saasapi-vm",
+      "appServicePlan": "cn-saasapi-asp",
+      "webApp": "cn-saasapi-web"
     },
     "rules": [
       "Use lowercase for storage account names (no hyphens)",
       "Prefix all resources with cn (CloudNova)",
-      "Include environment suffix (dev, test, prod)",
       "Maximum 24 characters for storage accounts"
     ]
   },
@@ -28,18 +27,12 @@
     "Owner"
   ],
   "costTiers": {
-    "dev": {
+    "default": {
       "vmSize": "Standard_B2s",
       "appServicePlan": "B1",
       "storageSku": "Standard_LRS",
       "vmOsDiskGb": 64,
-      "rationale": "Dev workloads do not need D-series or Premium disks"
-    },
-    "prod": {
-      "vmSize": "Standard_D4s_v3",
-      "appServicePlan": "P1v3",
-      "storageSku": "Standard_GRS",
-      "rationale": "Production requires HA and performance headroom"
+      "rationale": "Demo workloads use cost-efficient SKUs"
     }
   },
   "networkRules": {

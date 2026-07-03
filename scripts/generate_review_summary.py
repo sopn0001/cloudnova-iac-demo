@@ -85,7 +85,7 @@ FINDINGS = [
         "severity": "MEDIUM",
         "category": "Naming",
         "issue": "Non-standard resource naming (missing cn- prefix)",
-        "recommendation": "Follow `cn-{appName}-{environment}-{resourceType}` convention.",
+        "recommendation": "Follow `cn-{appName}-{resourceType}` convention.",
         "patterns": ['naming_prefix         = "cn-'],
         "invert": True,
     },
@@ -183,7 +183,7 @@ def render_markdown(
     active_findings: list[dict],
     checkov_summary: str | None = None,
 ) -> str:
-    convention = standards.get("namingConvention", {}).get("pattern", "cn-{appName}-{environment}-{resourceType}")
+    convention = standards.get("namingConvention", {}).get("pattern", "cn-{appName}-{resourceType}")
     status, status_detail = verdict(active_findings)
     status_emoji = {"BLOCKED": "🚫", "WARNING": "⚠️", "ADVISORY": "ℹ️", "READY": "✅"}[status]
 

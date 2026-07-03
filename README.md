@@ -77,18 +77,6 @@ az login
 az account set --subscription "<your-subscription-id>"
 ```
 
-### Create Azure resources
-
-```bash
-az group create --name rg-cloudnova-dev --location canadacentral
-
-az keyvault create \
-  --name kv-cloudnova-dev \
-  --resource-group rg-cloudnova-dev \
-  --location canadacentral \
-  --enable-rbac-authorization true
-```
-
 ### Deploy fixed template
 
 ```bash
@@ -96,12 +84,7 @@ cd infra/terraform/fixed
 SUB_ID=$(az account show --query id -o tsv)
 
 terraform init
-terraform plan \
-  -var="app_name=saasapi" \
-  -var="environment=dev" \
-  -var="resource_group_name=rg-cloudnova-dev" \
-  -var="key_vault_id=/subscriptions/${SUB_ID}/resourceGroups/rg-cloudnova-dev/providers/Microsoft.KeyVault/vaults/kv-cloudnova-dev" \
-  -var="ssh_public_key=$(cat ~/.ssh/id_rsa.pub)"
+terraform plan -var="ssh_public_key=$(cat ~/.ssh/id_rsa.pub)"
 ```
 
 ## CI/CD integration (GitHub → PR comment → Azure)
@@ -143,5 +126,5 @@ terraform plan \
 
 ```bash
 cd infra/terraform/fixed && terraform destroy  # same -var flags as plan
-az group delete --name rg-cloudnova-dev --yes
+az group delete --name rg-cloudnova --yes
 ```

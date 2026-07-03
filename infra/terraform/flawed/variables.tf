@@ -4,12 +4,6 @@ variable "location" {
   default     = "canadacentral"
 }
 
-variable "environment" {
-  description = "Environment name (dev, test, prod)"
-  type        = string
-  default     = "dev"
-}
-
 variable "app_name" {
   description = "Application workload name"
   type        = string
@@ -27,10 +21,11 @@ variable "sql_admin_password" {
 variable "resource_group_name" {
   description = "Name of the resource group Terraform will create"
   type        = string
+  default     = "rg-cloudnova"
 }
 
 locals {
-  # ISSUE: Non-standard naming — CloudNova requires cn-{app}-{env}-{type}
+  # ISSUE: Non-standard naming — CloudNova requires cn-{app}-{type}
   storage_account_name  = "storage${substr(md5(azurerm_resource_group.main.id), 0, 8)}"
   vnet_name             = "vnet-${var.app_name}"
   nsg_name              = "nsg-${var.app_name}"
@@ -38,5 +33,5 @@ locals {
   nic_name              = "nic-${var.app_name}"
   vm_name               = "vm-${var.app_name}"
   app_service_plan_name = "asp-${var.app_name}"
-  web_app_name          = "${var.app_name}-${var.environment}"
+  web_app_name          = "${var.app_name}-web"
 }
