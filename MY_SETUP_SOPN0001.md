@@ -91,6 +91,7 @@ Click **New repository secret** for each:
 | `AZURE_TENANT_ID` | `0f69441c-29e3-4293-9c7a-c6b8ec38e66e` |
 | `AZURE_SUBSCRIPTION_ID` | `1539b06f-7167-4e7d-a533-c342e2c6cdb4` |
 | `SSH_PUBLIC_KEY` | Run below, paste full output |
+| `OPENAI_API_KEY` | (Optional) OpenAI API key for live AI PR reviews — falls back to rule-based review if unset |
 
 Get SSH public key:
 

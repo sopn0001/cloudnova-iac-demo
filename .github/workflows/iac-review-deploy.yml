@@ -54,9 +54,14 @@ jobs:
             REVIEW_TEMPLATE="infra/terraform/flawed/main.tf"
             TERRAFORM_DIRS="infra/terraform/flawed infra/terraform/fixed"
           else
-            REVIEW_TEMPLATE=$(echo "$CHANGED" | grep 'main\.tf' | head -1)
-            if [ -z "$REVIEW_TEMPLATE" ]; then
-              REVIEW_TEMPLATE=$(echo "$CHANGED" | head -1)
+            # Prefer flawed template when both flawed/ and fixed/ change in the same PR
+            if echo "$CHANGED" | grep -q '^infra/terraform/flawed/main\.tf$'; then
+              REVIEW_TEMPLATE="infra/terraform/flawed/main.tf"
+            else
+              REVIEW_TEMPLATE=$(echo "$CHANGED" | grep 'main\.tf' | head -1)
+              if [ -z "$REVIEW_TEMPLATE" ]; then
+                REVIEW_TEMPLATE=$(echo "$CHANGED" | head -1)
+              fi
             fi
             TERRAFORM_DIRS=$(echo "$CHANGED" | xargs -I{} dirname {} | sort -u | tr '\n' ' ')
           fi

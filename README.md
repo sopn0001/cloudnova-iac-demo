@@ -20,7 +20,8 @@ This project demonstrates catching those issues — open ports, public storage, 
 │   ├── checkov.yaml     # Policy-as-code
 │   └── naming-standards.json
 ├── scripts/
-│   └── generate_review_summary.py
+│   ├── ai_review.py             # Live OpenAI PR review (CI when OPENAI_API_KEY is set)
+│   └── generate_review_summary.py  # Rule-based fallback review
 ├── docs/
 │   ├── DEMO_SCRIPT.md           # 12–15 min presentation guide
 │   ├── PRESENTATION_SLIDES.md   # Slide outline + citations
