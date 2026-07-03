@@ -82,17 +82,16 @@ jobs:
         with:
           terraform_version: 1.9.0
 
-      - name: Terraform init and validate (flawed)
-        working-directory: infra/terraform/flawed
+      - name: Terraform init and validate
         run: |
-          terraform init -backend=false -input=false
-          terraform validate
-
-      - name: Terraform init and validate (fixed)
-        working-directory: infra/terraform/fixed
-        run: |
-          terraform init -backend=false -input=false
-          terraform validate
+          for dir in infra/terraform/flawed infra/terraform/fixed; do
+            if [ -f "$dir/main.tf" ]; then
+              echo "Validating $dir..."
+              (cd "$dir" && terraform init -backend=false -input=false && terraform validate)
+            else
+              echo "Skipping $dir — main.tf not present yet (add during demo)"
+            fi
+          done
 
   security-scan:
     name: Policy-as-Code (Checkov)
@@ -207,6 +206,10 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
+          if [ ! -f main.tf ]; then
+            echo "Skipping deploy — infra/terraform/fixed/main.tf not present yet"
+            exit 0
+          fi
           terraform init -backend=false -input=false
           terraform plan \
             -var="app_name=saasapi" \
