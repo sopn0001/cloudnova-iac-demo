@@ -4,17 +4,6 @@ variable "location" {
   default     = "canadacentral"
 }
 
-variable "environment" {
-  description = "Environment name (dev, test, prod)"
-  type        = string
-  default     = "dev"
-
-  validation {
-    condition     = contains(["dev", "test", "prod"], var.environment)
-    error_message = "environment must be dev, test, or prod."
-  }
-}
-
 variable "app_name" {
   description = "Application workload name"
   type        = string
@@ -57,7 +46,7 @@ data "azurerm_resource_group" "main" {
 }
 
 locals {
-  naming_prefix         = "cn-${var.app_name}-${var.environment}"
+  naming_prefix         = "cn-${var.app_name}"
   storage_account_name  = lower(replace("${local.naming_prefix}st${substr(md5(data.azurerm_resource_group.main.id), 0, 6)}", "-", ""))
   vnet_name             = "${local.naming_prefix}-vnet"
   nsg_name              = "${local.naming_prefix}-nsg"
@@ -67,7 +56,7 @@ locals {
   web_app_name          = "${local.naming_prefix}-web"
 
   default_tags = {
-    Environment = var.environment
+    Environment = "cloudnova"
     Application = var.app_name
     Company     = "CloudNova"
     ManagedBy   = "Terraform"

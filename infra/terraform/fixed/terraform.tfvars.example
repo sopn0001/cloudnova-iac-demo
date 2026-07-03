@@ -1,5 +1,4 @@
 location             = "canadacentral"
-environment          = "dev"
 app_name             = "saasapi"
 resource_group_name  = "rg-cloudnova-dev"
 key_vault_id         = "/subscriptions/<subscription-id>/resourceGroups/rg-cloudnova-dev/providers/Microsoft.KeyVault/vaults/kv-cloudnova-dev"

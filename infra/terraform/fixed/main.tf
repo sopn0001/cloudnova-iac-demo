@@ -5,7 +5,7 @@ resource "azurerm_storage_account" "main" {
   resource_group_name      = data.azurerm_resource_group.main.name
   location                 = var.location
   account_tier             = "Standard"
-  account_replication_type = var.environment == "prod" ? "GRS" : "LRS"
+  account_replication_type = "LRS"
   account_kind             = "StorageV2"
   access_tier              = "Hot"
   tags                     = local.tags
@@ -88,7 +88,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   name                = local.vm_name
   resource_group_name = data.azurerm_resource_group.main.name
   location            = var.location
-  size                = var.environment == "prod" ? "Standard_D4s_v3" : "Standard_B2s"
+  size                = "Standard_B2s"
   admin_username      = "cloudnova_admin"
   tags                = local.tags
 
@@ -123,7 +123,7 @@ resource "azurerm_service_plan" "main" {
   location            = var.location
   os_type             = "Linux"
   tags                = local.tags
-  sku_name            = var.environment == "prod" ? "P1v3" : "B1"
+  sku_name            = "B1"
 }
 
 resource "azurerm_linux_web_app" "main" {
@@ -139,7 +139,7 @@ resource "azurerm_linux_web_app" "main" {
   }
 
   site_config {
-    always_on           = var.environment == "prod"
+    always_on           = false
     ftps_state          = "Disabled"
     minimum_tls_version = "1.2"
 

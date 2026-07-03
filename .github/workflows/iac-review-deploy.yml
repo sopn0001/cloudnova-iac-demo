@@ -211,13 +211,11 @@ jobs:
           terraform init -backend=false -input=false
           terraform plan \
             -var="app_name=saasapi" \
-            -var="environment=dev" \
             -var="resource_group_name=${{ env.RESOURCE_GROUP }}" \
             -var="key_vault_id=/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.KeyVault/vaults/${{ env.KEY_VAULT_NAME }}" \
             -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
           terraform apply -auto-approve \
             -var="app_name=saasapi" \
-            -var="environment=dev" \
             -var="resource_group_name=${{ env.RESOURCE_GROUP }}" \
             -var="key_vault_id=/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.KeyVault/vaults/${{ env.KEY_VAULT_NAME }}" \
             -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
