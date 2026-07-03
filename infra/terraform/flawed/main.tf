@@ -157,3 +157,4 @@ resource "azurerm_linux_web_app" "main" {
     value = "Server=tcp:sqlserver.database.windows.net;Database=appdb;User ID=admin;Password=${var.sql_admin_password};"
   }
 }
+
