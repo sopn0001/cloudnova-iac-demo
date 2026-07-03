@@ -2,9 +2,14 @@
 
 # ISSUE: No governance tags on any resource
 
+resource "azurerm_resource_group" "main" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
 resource "azurerm_storage_account" "main" {
   name                     = local.storage_account_name
-  resource_group_name      = data.azurerm_resource_group.main.name
+  resource_group_name      = azurerm_resource_group.main.name
   location                 = var.location
   account_tier             = "Premium"
   account_replication_type = "LRS"
@@ -26,12 +31,12 @@ resource "azurerm_virtual_network" "main" {
   name                = local.vnet_name
   address_space       = ["10.0.0.0/16"]
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
 }
 
 resource "azurerm_subnet" "main" {
   name                 = "subnet-app"
-  resource_group_name  = data.azurerm_resource_group.main.name
+  resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.1.0/24"]
 }
@@ -40,7 +45,7 @@ resource "azurerm_subnet" "main" {
 resource "azurerm_network_security_group" "main" {
   name                = local.nsg_name
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
     name                       = "SSH-From-Internet"
@@ -58,7 +63,7 @@ resource "azurerm_network_security_group" "main" {
 resource "azurerm_public_ip" "main" {
   name                = local.public_ip_name
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
@@ -66,7 +71,7 @@ resource "azurerm_public_ip" "main" {
 resource "azurerm_network_interface" "main" {
   name                = local.nic_name
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
     name                          = "internal"
@@ -84,7 +89,7 @@ resource "azurerm_network_interface_security_group_association" "main" {
 # ISSUE: Standard_D8s_v3 is oversized for a dev API worker (~$280+/mo vs ~$30 for B2s)
 resource "azurerm_linux_virtual_machine" "main" {
   name                = local.vm_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = var.location
   size                = "Standard_D8s_v3"
   admin_username      = "cloudnova_admin"
@@ -115,7 +120,7 @@ resource "azurerm_linux_virtual_machine" "main" {
 resource "azurerm_managed_disk" "orphan_backup" {
   name                 = "disk-old-backup-${var.app_name}"
   location             = var.location
-  resource_group_name  = data.azurerm_resource_group.main.name
+  resource_group_name  = azurerm_resource_group.main.name
   storage_account_type = "Premium_LRS"
   create_option        = "Empty"
   disk_size_gb         = 512
@@ -123,7 +128,7 @@ resource "azurerm_managed_disk" "orphan_backup" {
 
 resource "azurerm_service_plan" "main" {
   name                = local.app_service_plan_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = var.location
   os_type             = "Linux"
   sku_name            = "P1v3"
@@ -131,7 +136,7 @@ resource "azurerm_service_plan" "main" {
 
 resource "azurerm_linux_web_app" "main" {
   name                = local.web_app_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = var.location
   service_plan_id     = azurerm_service_plan.main.id
   https_only          = false

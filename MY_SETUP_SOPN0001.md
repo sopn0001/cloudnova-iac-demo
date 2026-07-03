@@ -64,17 +64,11 @@ az ad app federated-credential create --id "$OBJECT_ID" --parameters '{
   "audiences": ["api://AzureADTokenExchange"]
 }'
 
-# Resource group
-az group create \
-  --name rg-cloudnova-dev \
-  --location canadacentral \
-  --tags Environment=dev Application=saasapi Company=CloudNova
-
-# Grant Contributor on resource group
+# Grant Contributor at subscription scope (required for Terraform to create the resource group)
 az role assignment create \
   --assignee "$APP_ID" \
   --role Contributor \
-  --scope "/subscriptions/$SUB_ID/resourceGroups/rg-cloudnova-dev"
+  --scope "/subscriptions/$SUB_ID"
 ```
 
 ---
@@ -180,10 +174,10 @@ Open PR → comment shows **✅ READY** → merge to deploy.
 ## Quick checklist
 
 ```
-[ ] Step 1: git push to GitHub
-[ ] Step 2: Azure OIDC + resource group commands
-[ ] Step 3: Four GitHub secrets added
-[ ] Step 4: GitHub environment "dev" created
+[x] Step 1: git push to GitHub
+[x] Step 2: Azure OIDC + resource group commands
+[x] Step 3: Four GitHub secrets added
+[x] Step 4: GitHub environment "dev" created
 [ ] Step 5: Open demo PR — see BLOCKED comment
 [ ] Step 6: Merge to main — Azure deploy succeeds
 ```

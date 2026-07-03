@@ -25,17 +25,13 @@ variable "sql_admin_password" {
 }
 
 variable "resource_group_name" {
-  description = "Existing resource group name"
+  description = "Name of the resource group Terraform will create"
   type        = string
-}
-
-data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
 }
 
 locals {
   # ISSUE: Non-standard naming — CloudNova requires cn-{app}-{env}-{type}
-  storage_account_name  = "storage${substr(md5(data.azurerm_resource_group.main.id), 0, 8)}"
+  storage_account_name  = "storage${substr(md5(azurerm_resource_group.main.id), 0, 8)}"
   vnet_name             = "vnet-${var.app_name}"
   nsg_name              = "nsg-${var.app_name}"
   public_ip_name        = "pip-${var.app_name}"

@@ -26,7 +26,7 @@ variable "app_name" {
 }
 
 variable "resource_group_name" {
-  description = "Existing resource group name"
+  description = "Name of the resource group Terraform will create"
   type        = string
 }
 
@@ -52,13 +52,9 @@ variable "tags" {
   default     = {}
 }
 
-data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
-}
-
 locals {
   naming_prefix         = "cn-${var.app_name}-${var.environment}"
-  storage_account_name  = lower(replace("${local.naming_prefix}st${substr(md5(data.azurerm_resource_group.main.id), 0, 6)}", "-", ""))
+  storage_account_name  = lower(replace("${local.naming_prefix}st${substr(md5(azurerm_resource_group.main.id), 0, 6)}", "-", ""))
   vnet_name             = "${local.naming_prefix}-vnet"
   nsg_name              = "${local.naming_prefix}-nsg"
   nic_name              = "${local.naming_prefix}-nic"

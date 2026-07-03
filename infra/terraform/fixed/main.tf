@@ -1,11 +1,17 @@
 # CloudNova — remediated Terraform (post AI + policy-as-code review)
 
+resource "azurerm_resource_group" "main" {
+  name     = var.resource_group_name
+  location = var.location
+  tags     = local.tags
+}
+
 resource "azurerm_storage_account" "main" {
   name                     = local.storage_account_name
-  resource_group_name      = data.azurerm_resource_group.main.name
+  resource_group_name      = azurerm_resource_group.main.name
   location                 = var.location
   account_tier             = "Standard"
-  account_replication_type = var.environment == "prod" ? "GRS" : "LRS"
+  account_replication_type = "LRS"
   account_kind             = "StorageV2"
   access_tier              = "Hot"
   tags                     = local.tags
@@ -24,13 +30,13 @@ resource "azurerm_virtual_network" "main" {
   name                = local.vnet_name
   address_space       = ["10.0.0.0/16"]
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   tags                = local.tags
 }
 
 resource "azurerm_subnet" "main" {
   name                 = "${local.naming_prefix}-snet-app"
-  resource_group_name  = data.azurerm_resource_group.main.name
+  resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.1.0/24"]
 }
@@ -38,7 +44,7 @@ resource "azurerm_subnet" "main" {
 resource "azurerm_network_security_group" "main" {
   name                = local.nsg_name
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   tags                = local.tags
 
   security_rule {
@@ -69,7 +75,7 @@ resource "azurerm_network_security_group" "main" {
 resource "azurerm_network_interface" "main" {
   name                = local.nic_name
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   tags                = local.tags
 
   ip_configuration {
@@ -86,7 +92,7 @@ resource "azurerm_network_interface_security_group_association" "main" {
 
 resource "azurerm_linux_virtual_machine" "main" {
   name                = local.vm_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = var.location
   size                = var.environment == "prod" ? "Standard_D4s_v3" : "Standard_B2s"
   admin_username      = "cloudnova_admin"
@@ -119,7 +125,7 @@ resource "azurerm_linux_virtual_machine" "main" {
 
 resource "azurerm_service_plan" "main" {
   name                = local.app_service_plan_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = var.location
   os_type             = "Linux"
   tags                = local.tags
@@ -128,7 +134,7 @@ resource "azurerm_service_plan" "main" {
 
 resource "azurerm_linux_web_app" "main" {
   name                = local.web_app_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = var.location
   service_plan_id     = azurerm_service_plan.main.id
   https_only          = true
