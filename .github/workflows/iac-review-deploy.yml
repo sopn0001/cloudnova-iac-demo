@@ -152,12 +152,11 @@ jobs:
             --standards policies/naming-standards.json \
             --fail-on-critical
 
-  deploy-dev:
+  deploy:
     name: Deploy to Azure (fixed Terraform)
     runs-on: ubuntu-latest
     needs: [validate-terraform, security-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: dev
     steps:
       - uses: actions/checkout@v4
 
