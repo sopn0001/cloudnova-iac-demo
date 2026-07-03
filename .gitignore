@@ -1,0 +1,29 @@
+# Local tooling
+.venv/
+__pycache__/
+*.pyc
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Bicep build output
+*.json
+!policies/naming-standards.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated review artifacts
+ai-review-summary.md
+checkov-results.sarif
+demo-backup/
+
+# Secrets
+.env
+*.pem

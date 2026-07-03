@@ -1,0 +1,8 @@
+quiet: false
+compact: true
+framework:
+  - terraform
+
+hard-fail-on:
+  - HIGH
+  - CRITICAL
