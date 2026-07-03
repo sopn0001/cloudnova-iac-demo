@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""CloudNova AI-assisted IaC review using OpenAI."""
+"""CloudNova AI-assisted IaC review using Azure OpenAI or OpenAI.
+
+Provider selection:
+- Azure OpenAI  — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT
+- OpenAI (public) — set OPENAI_API_KEY (optionally OPENAI_MODEL)
+Azure is preferred when AZURE_OPENAI_ENDPOINT is present."""
 
 from __future__ import annotations
 
@@ -106,7 +111,29 @@ def build_user_prompt(
     )
 
 
-def run_openai_review(user_prompt: str) -> str:
+def build_client_and_model():
+    """Return (client, model) for Azure OpenAI or public OpenAI based on env vars."""
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+
+    if azure_endpoint:
+        try:
+            from openai import AzureOpenAI
+        except ImportError as exc:
+            raise RuntimeError("Install the OpenAI SDK: pip install openai") from exc
+
+        api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("AZURE_OPENAI_API_KEY is not set")
+
+        client = AzureOpenAI(
+            api_key=api_key,
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2025-04-01-preview"),
+            azure_endpoint=azure_endpoint,
+        )
+        # For Azure, the model argument is the deployment name.
+        model = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
+        return client, model
+
     try:
         from openai import OpenAI
     except ImportError as exc:
@@ -114,22 +141,41 @@ def run_openai_review(user_prompt: str) -> str:
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is not set")
+        raise RuntimeError("Set AZURE_OPENAI_ENDPOINT (+ key/deployment) or OPENAI_API_KEY")
 
     client = OpenAI(api_key=api_key)
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    return client, model
 
-    response = client.chat.completions.create(
-        model=model,
-        temperature=0.2,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
+
+def run_openai_review(user_prompt: str) -> str:
+    client, model = build_client_and_model()
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    # A low temperature keeps reviews deterministic, but newer reasoning models
+    # (e.g. the gpt-5 family) only accept the default temperature. Retry without
+    # it if the model rejects the override.
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            temperature=0.2,
+            messages=messages,
+        )
+    except Exception as exc:  # noqa: BLE001 - narrow via message inspection below
+        if "temperature" not in str(exc).lower():
+            raise
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+        )
+
     content = response.choices[0].message.content
     if not content:
-        raise RuntimeError("OpenAI returned an empty response")
+        raise RuntimeError("Model returned an empty response")
     return content.strip()
 
 

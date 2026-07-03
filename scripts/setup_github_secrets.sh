@@ -29,12 +29,21 @@ gh secret set AZURE_TENANT_ID --repo "$REPO" --body "$AZURE_TENANT_ID"
 gh secret set AZURE_SUBSCRIPTION_ID --repo "$REPO" --body "$AZURE_SUBSCRIPTION_ID"
 gh secret set SSH_PUBLIC_KEY --repo "$REPO" --body "$(cat "$SSH_KEY")"
 
-# if [ -n "${OPENAI_API_KEY:-}" ]; then
-#   gh secret set OPENAI_API_KEY --repo "$REPO" --body "$OPENAI_API_KEY"
-#   echo "OPENAI_API_KEY secret set (live AI reviews enabled)"
-# else
-#   echo "OPENAI_API_KEY not set in shell — PR reviews will use rule-based fallback"
-# fi
+# Azure OpenAI (preferred) — set these in your shell before running to enable live AI reviews:
+#   export AZURE_OPENAI_ENDPOINT="https://<resource>.openai.azure.com/"
+#   export AZURE_OPENAI_API_KEY="<key>"
+#   export AZURE_OPENAI_DEPLOYMENT="cloudnova-review"
+if [ -n "${AZURE_OPENAI_ENDPOINT:-}" ]; then
+  gh secret set AZURE_OPENAI_ENDPOINT --repo "$REPO" --body "$AZURE_OPENAI_ENDPOINT"
+  gh secret set AZURE_OPENAI_API_KEY --repo "$REPO" --body "${AZURE_OPENAI_API_KEY:-}"
+  gh secret set AZURE_OPENAI_DEPLOYMENT --repo "$REPO" --body "${AZURE_OPENAI_DEPLOYMENT:-cloudnova-review}"
+  echo "Azure OpenAI secrets set (live AI reviews enabled)"
+elif [ -n "${OPENAI_API_KEY:-}" ]; then
+  gh secret set OPENAI_API_KEY --repo "$REPO" --body "$OPENAI_API_KEY"
+  echo "OPENAI_API_KEY secret set (live AI reviews enabled)"
+else
+  echo "No AI provider env set — PR reviews will use rule-based fallback"
+fi
 
 echo "Enabling workflow write permissions (required for PR comments)..."
 gh api -X PUT "repos/${REPO}/actions/permissions/workflow" \

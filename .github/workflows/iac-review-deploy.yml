@@ -131,12 +131,26 @@ jobs:
         continue-on-error: true
 
       - name: Generate CloudNova review summary
+        env:
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python3 scripts/generate_review_summary.py \
-            --template "${{ needs.detect-changes.outputs.review_template }}" \
-            --standards policies/naming-standards.json \
-            --checkov-file checkov-output.txt \
-            --output ai-review-summary.md
+          if [ -n "$AZURE_OPENAI_ENDPOINT" ] || [ -n "$OPENAI_API_KEY" ]; then
+            pip install --quiet openai
+            python3 scripts/ai_review.py \
+              --template "${{ needs.detect-changes.outputs.review_template }}" \
+              --standards policies/naming-standards.json \
+              --checkov-file checkov-output.txt \
+              --output ai-review-summary.md
+          else
+            python3 scripts/generate_review_summary.py \
+              --template "${{ needs.detect-changes.outputs.review_template }}" \
+              --standards policies/naming-standards.json \
+              --checkov-file checkov-output.txt \
+              --output ai-review-summary.md
+          fi
 
       - name: Post review summary on PR
         uses: marocchino/sticky-pull-request-comment@v2
@@ -145,11 +159,23 @@ jobs:
           header: cloudnova-ai-iac-review
 
       - name: Block merge if critical issues remain
+        env:
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python3 scripts/generate_review_summary.py \
-            --template "${{ needs.detect-changes.outputs.review_template }}" \
-            --standards policies/naming-standards.json \
-            --fail-on-critical
+          if [ -n "$AZURE_OPENAI_ENDPOINT" ] || [ -n "$OPENAI_API_KEY" ]; then
+            python3 scripts/ai_review.py \
+              --template "${{ needs.detect-changes.outputs.review_template }}" \
+              --standards policies/naming-standards.json \
+              --fail-on-critical
+          else
+            python3 scripts/generate_review_summary.py \
+              --template "${{ needs.detect-changes.outputs.review_template }}" \
+              --standards policies/naming-standards.json \
+              --fail-on-critical
+          fi
 
   deploy:
     name: Deploy to Azure (fixed Terraform)
